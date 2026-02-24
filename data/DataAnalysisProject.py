@@ -1,5 +1,7 @@
 import pandas as pd
 import re
+import matplotlib.pyplot as plt
+import numpy as np
 
 #This reads the dataset into the pandas DataFrame
 df = pd.read_csv("data/IMDB_Dataset.csv")
@@ -29,6 +31,7 @@ while True:
     print('5. Sort showing the longest reviews first.')#This will be my sort
     print('6. Sort showing the shortest reviews first. ')#This will also be sort
     print('7. Analyze and find out if positive or negative reviews are more emotional')#Aggregation - collecting and summarizing how emotional the reviews are
+    print('8. See a graph that shows top 10 words for positive reviews compared to the length')
     print('0. Quit')
 
     choice = int(input(''))
@@ -133,3 +136,34 @@ while True:
         df["contains_emotion"] = df["review"].str.lower().apply(lambda x: any(word in x for word in emotion_words))
 
         print(df.groupby("sentiment")["contains_emotion"].mean() * 100)
+
+    elif choice == 8:
+        
+        #Filter only positive reviews
+        positive_df = df[df["sentiment"] == "positive"].copy()
+
+        words = (
+            positive_df["review"]
+            .str.lower()
+            .str.replace(r"[^a-z\s]", "", regex=True)
+            .str.split()
+        )
+
+        rows = positive_df.assign(word=words).explode("word")
+
+        filtered = rows[(rows["word"].str.len() > 4) & (~rows["word"].isin(stop_words))]
+
+        top_words = filtered["word"].value_counts().head(10).index
+
+        avg_lengths = (filtered[filtered["word"].isin(top_words)].groupby("word")["review_length"].mean().sort_values(ascending=False))
+
+        #Plot
+        plt.figure()
+        avg_lengths.plot(kind="bar")
+        plt.xlabel("Word")
+        plt.ylabel("Average REview Length")
+        plt.title("Average Review Length for Top Positive Words")
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.show()
+
