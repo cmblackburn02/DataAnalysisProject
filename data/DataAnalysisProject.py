@@ -57,6 +57,7 @@ while True:
 
         filtered_words.value_counts().head(10)
 
+        #Display the top 10 words used in the positive reviews
         positive_words = (
         df[df["sentiment"] == "positive"]["review"]
         .str.lower()
@@ -85,6 +86,7 @@ while True:
 
         filtered_words.value_counts().head(10)
 
+        #Displays the top 10 words in negative reviews
         negative_words = (
             df[df["sentiment"] == "negative"]["review"]
             .str.lower()
